@@ -1,0 +1,166 @@
+services:
+  # ============================================
+  # MONGODB - Banco de Dados
+  # ============================================
+  mongo:
+    image: mongo:7.0
+    container_name: gdash-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: gdash-weather
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - gdash-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # RABBITMQ - Fila de Mensagens
+  # ============================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: gdash-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"     # AMQP protocol
+      - "15672:15672"   # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - gdash-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # BACKEND - NestJS API
+  # ============================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gdash-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT}:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      MONGODB_URI: ${MONGODB_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      DEFAULT_USER_EMAIL: ${DEFAULT_USER_EMAIL}
+      DEFAULT_USER_PASSWORD: ${DEFAULT_USER_PASSWORD}
+      DEFAULT_USER_NAME: ${DEFAULT_USER_NAME}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - gdash-network
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: npm run start:dev
+
+  # ============================================
+  # FRONTEND - React + Vite
+  # ============================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gdash-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - gdash-network
+    depends_on:
+      - backend
+    command: npm run dev -- --host
+
+  # ============================================
+  # WEATHER COLLECTOR - Python
+  # ============================================
+  weather-collector:
+    build:
+      context: ./weather-collector
+      dockerfile: Dockerfile
+    container_name: gdash-weather-collector
+    restart: unless-stopped
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+      WEATHER_API: ${WEATHER_API}
+      WEATHER_LATITUDE: ${WEATHER_LATITUDE}
+      WEATHER_LONGITUDE: ${WEATHER_LONGITUDE}
+      WEATHER_COLLECTION_INTERVAL: ${WEATHER_COLLECTION_INTERVAL}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+      WEATHER_CITY: ${WEATHER_CITY:-}
+      WEATHER_COUNTRY_CODE: ${WEATHER_COUNTRY_CODE:-}
+    networks:
+      - gdash-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    command: python main.py
+
+  # ============================================
+  # WORKER GO - Consumidor da Fila
+  # ============================================
+  worker-go:
+    build:
+      context: ./worker-go
+      dockerfile: Dockerfile
+    container_name: gdash-worker-go
+    restart: unless-stopped
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+      BACKEND_API_URL: http://backend:3000/api
+      RETRY_ATTEMPTS: ${GO_WORKER_RETRY_ATTEMPTS}
+      RETRY_DELAY: ${GO_WORKER_RETRY_DELAY}
+    networks:
+      - gdash-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    command: /app/worker
+
+# ============================================
+# VOLUMES - Persistência de Dados
+# ============================================
+volumes:
+  mongo_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+# ============================================
+# NETWORKS - Comunicação entre Serviços
+# ============================================
+networks:
+  gdash-network:
+    driver: bridge
