@@ -1,0 +1,109 @@
+# ============================================
+# ARQUIVOS DE AMBIENTE
+# ============================================
+.env
+.env.local
+.env.*.local
+
+# ============================================
+# NODE.JS / NESTJS / REACT
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+.next/
+out/
+
+# ============================================
+# PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# ============================================
+# GO
+# ============================================
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+vendor/
+
+# ============================================
+# DOCKER
+# ============================================
+*.log
+
+# ============================================
+# MONGODB
+# ============================================
+*.db
+data/
+
+# ============================================
+# IDEs E EDITORES
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# ============================================
+# TEMPORÁRIOS E CACHE
+# ============================================
+tmp/
+temp/
+*.tmp
+.cache/
+
+# ============================================
+# SYSTEM FILES
+# ============================================
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# TESTES E COBERTURA
+# ============================================
+coverage/
+*.lcov
+.nyc_output/
+
+# ============================================
+# ESPECÍFICOS DO PROJETO
+# ============================================
+# Manter apenas .env.example, ignorar .env real
+!.env.example
