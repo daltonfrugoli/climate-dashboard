@@ -1,0 +1,13 @@
+cd worker-go
+@"
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+.env
+"@ | Out-File -FilePath .dockerignore -Encoding utf8
+cd ..
