@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import RoleGuard from '@/components/guards/RoleGuard';
 
 // Pages
 import LoginPage from '@/pages/LoginPage';
@@ -62,7 +63,14 @@ export default function AppRoutes() {
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="users" element={<UsersPage />} />
+          <Route
+            path="users"
+            element={
+              <RoleGuard allowedRoles={['admin']}>
+                <UsersPage />
+              </RoleGuard>
+            }
+          />
         </Route>
 
         {/* Rota 404 */}
