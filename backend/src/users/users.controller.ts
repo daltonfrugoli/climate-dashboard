@@ -11,10 +11,13 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('users')
-// @UseGuards(JwtAuthGuard) // Descomente depois de criar o guard
+@UseGuards(JwtAuthGuard, RolesGuard) // JWT + Role guards
+@Roles('admin') // Todas as rotas requerem role admin
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
