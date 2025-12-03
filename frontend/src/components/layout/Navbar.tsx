@@ -31,7 +31,7 @@ export default function Navbar() {
             </span>
           </div>
 
-          {/* --------- Menu Desktop --------- */}
+          {/* ---------- MENU DESKTOP ---------- */}
           <div className="hidden md:flex items-center gap-4">
             <Link to="/dashboard">
               <Button
@@ -43,15 +43,17 @@ export default function Navbar() {
               </Button>
             </Link>
 
-            <Link to="/users">
-              <Button
-                variant={isActive("/users") ? "default" : "ghost"}
-                className="gap-2"
-              >
-                <Users className="h-4 w-4" />
-                Usuários
-              </Button>
-            </Link>
+            {user?.role === "admin" && (
+              <Link to="/users">
+                <Button
+                  variant={isActive("/users") ? "default" : "ghost"}
+                  className="gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Usuários
+                </Button>
+              </Link>
+            )}
 
             {/* Menu do usuário */}
             <DropdownMenu>
@@ -82,7 +84,7 @@ export default function Navbar() {
             </DropdownMenu>
           </div>
 
-          {/* --------- Botão Hambúrguer (Mobile) --------- */}
+          {/* ---------- BOTÃO HAMBÚRGUER (MOBILE) ---------- */}
           <button
             className="md:hidden"
             onClick={() => setIsOpen(!isOpen)}
@@ -91,7 +93,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* --------- Menu Mobile --------- */}
+        {/* ---------- MENU MOBILE ---------- */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-4 animate-in fade-in slide-in-from-top-2">
             <Link to="/dashboard" onClick={() => setIsOpen(false)}>
@@ -104,25 +106,26 @@ export default function Navbar() {
               </Button>
             </Link>
 
-            <Link to="/users" onClick={() => setIsOpen(false)}>
-              <Button
-                variant={isActive("/users") ? "default" : "ghost"}
-                className="w-full justify-start gap-2"
-              >
-                <Users className="h-4 w-4" />
-                Usuários
-              </Button>
-            </Link>
+            {user?.role === "admin" && (
+              <Link to="/users" onClick={() => setIsOpen(false)}>
+                <Button
+                  variant={isActive("/users") ? "default" : "ghost"}
+                  className="w-full justify-start gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Usuários
+                </Button>
+              </Link>
+            )}
 
-            {/* User info */}
+            {/* Usuário */}
             <div className="pt-4 border-t">
               <div className="flex items-center gap-3 px-2">
                 <User className="h-6 w-6" />
                 <div className="flex flex-col">
                   <span className="font-medium">{user?.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {user?.email}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{user?.email}</span>
+                  <span className="text-xs text-muted-foreground">Role: {user?.role}</span>
                 </div>
               </div>
 
