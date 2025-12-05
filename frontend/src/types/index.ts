@@ -57,6 +57,7 @@ export interface WeatherInsights {
     avgTemperature: string;
     avgHumidity: string;
     temperatureRange: string;
+    source?: string; // "AI (LLaMA 3 via Groq)" ou "Rule-based system"
   };
   insights: Insight[];
   generatedAt: string;

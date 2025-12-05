@@ -6,6 +6,7 @@ import TemperatureChart from '@/components/dashboard/TemperatureChart';
 import InsightsCard from '@/components/dashboard/InsightsCard';
 import WeatherTable from '@/components/dashboard/WeatherTable';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Thermometer,
   Droplets,
@@ -34,7 +35,7 @@ export default function DashboardPage() {
           weatherService.getLatest(),
           weatherService.getLogs({ limit: 20 }),
           weatherService.getStats(7),
-          weatherService.getInsights(),
+          weatherService.getInsights(), // Fallback automático
         ]);
 
       setLatestData(latestResponse);
@@ -120,6 +121,15 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* Badge indicando fonte dos insights */}
+      {insights && (
+        <div className="flex justify-end">
+          <Badge variant={insights.summary.source?.includes('AI') ? 'default' : 'secondary'}>
+            {insights.summary.source || 'Insights'}
+          </Badge>
+        </div>
+      )}
 
       {/* Cards de estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
