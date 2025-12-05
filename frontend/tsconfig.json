@@ -5,9 +5,15 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+    "jsx": "react-jsx",
+    "types": ["react", "react-dom"],
     }
   }
 }
