@@ -25,11 +25,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 401 = Não autorizado
     if (error.response?.status === 401) {
-      // Token inválido, redirecionar para login
+      // Limpar localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      
+      // Se NÃO estiver na tela de login, redirecionar
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

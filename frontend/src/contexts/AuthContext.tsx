@@ -18,18 +18,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Carregar dados do localStorage na inicialização
+  // Validar token ao inicializar
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const validateToken = async () => {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
+      // Se não tem token, não tem o que validar
+      if (!storedToken || !storedUser) {
+        setLoading(false);
+        return;
+      }
 
-    setLoading(false);
-  }, []);
+      try {
+        // Validar token no backend
+        const response = await api.get('/auth/validate', {
+          headers: { 
+            Authorization: `Bearer ${storedToken}` 
+          },
+        });
+
+        // Token válido - atualizar state com dados do backend
+        const validatedUser = response.data.user;
+        
+        setToken(storedToken);
+        setUser(validatedUser);
+
+        console.log('✅ Token validado com sucesso');
+      } catch (error: any) {
+        console.warn('⚠️  Token inválido ou expirado, fazendo logout silencioso...');
+        
+        // Token inválido - limpar tudo SILENCIOSAMENTE
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+        
+        // NÃO redirecionar, apenas limpar
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    validateToken();
+  }, []); // ← Array vazio garante que roda APENAS uma vez
 
   const login = async (email: string, password: string) => {
     try {
@@ -47,8 +79,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Atualizar estado
       setToken(access_token);
       setUser(userData);
+
+      console.log('✅ Login realizado com sucesso');
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('❌ Erro no login:', error);
       throw new Error(
         error.response?.data?.message || 'Erro ao fazer login'
       );
@@ -63,6 +97,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Limpar estado
     setToken(null);
     setUser(null);
+
+    console.log('👋 Logout realizado');
   };
 
   return (
