@@ -65,6 +65,7 @@ services:
       DEFAULT_USER_PASSWORD: ${DEFAULT_USER_PASSWORD}
       DEFAULT_USER_NAME: ${DEFAULT_USER_NAME}
       RABBITMQ_URL: ${RABBITMQ_URL}
+      GROQ_API_KEY: ${GROQ_API_KEY}
     volumes:
       - ./backend:/app
       - /app/node_modules
