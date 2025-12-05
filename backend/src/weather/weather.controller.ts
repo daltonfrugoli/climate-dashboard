@@ -43,6 +43,16 @@ export class WeatherController {
     return this.weatherService.getStats(daysNumber);
   }
 
+  // @Get('insights/ai')
+  // async getAIInsights() {
+  //   return this.weatherService.generateInsightsWithAI();
+  // }
+
+  // @Get('insights')
+  // async getInsights() {
+  //   return this.weatherService.generateInsights();
+  // }
+
   @Get('insights')
   async getInsights() {
     return this.weatherService.generateInsights();
