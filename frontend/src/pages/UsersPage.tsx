@@ -13,9 +13,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { UserPlus, Pencil, Trash2, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import UserDialog from '@/components/users/UserDialog';
 import DeleteUserDialog from '@/components/users/DeleteUserDialog';
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -24,7 +24,14 @@ export default function UsersPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const { toast } = useToast();
+
+  // Contar quantos admins existem
+  const adminCount = users.filter(u => u.role === 'admin').length;
+  
+  // Verificar se é o último admin
+  const isLastAdmin = (user: User) => {
+    return user.role === 'admin' && adminCount === 1;
+  };
 
   const fetchUsers = async () => {
     try {
@@ -33,11 +40,7 @@ export default function UsersPage() {
       setUsers(data);
     } catch (error: any) {
       console.error('Error fetching users:', error);
-      toast({
-        title: 'Erro ao carregar usuários',
-        description: error.message || 'Ocorreu um erro ao buscar os usuários.',
-        variant: 'destructive',
-      });
+      toast.error(error.message || "Não foi possível deletar o usuário.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -68,17 +71,11 @@ export default function UsersPage() {
       if (selectedUser) {
         // Editar - usar _id
         await usersService.update(selectedUser._id, data);
-        toast({
-          title: 'Usuário atualizado',
-          description: 'As informações foram atualizadas com sucesso.',
-        });
+        toast.success("As informações foram atualizadas com sucesso.");
       } else {
         // Criar
         await usersService.create(data);
-        toast({
-          title: 'Usuário criado',
-          description: 'O novo usuário foi criado com sucesso.',
-        });
+        toast.success("O novo usuário foi criado com sucesso.");
       }
       fetchUsers();
     } catch (error: any) {
@@ -93,18 +90,11 @@ export default function UsersPage() {
 
     try {
       await usersService.delete(selectedUser._id); // usar _id
-      toast({
-        title: 'Usuário deletado',
-        description: 'O usuário foi removido com sucesso.',
-      });
+      toast.success("O usuário foi removido com sucesso.");
       setDeleteDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
-      toast({
-        title: 'Erro ao deletar',
-        description: error.message || 'Não foi possível deletar o usuário.',
-        variant: 'destructive',
-      });
+      toast.error(error.response.data.message || "Não foi possível deletar o usuário.");
     }
   };
 
@@ -187,6 +177,11 @@ export default function UsersPage() {
                         >
                           {user.role === 'admin' ? 'Admin' : 'Usuário'}
                         </Badge>
+                        {isLastAdmin(user) && (
+                          <Badge variant="destructive" className="ml-2">
+                            Último Admin
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge

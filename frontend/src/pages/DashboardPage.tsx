@@ -6,7 +6,7 @@ import TemperatureChart from '@/components/dashboard/TemperatureChart';
 import InsightsCard from '@/components/dashboard/InsightsCard';
 import WeatherTable from '@/components/dashboard/WeatherTable';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+//import { Badge } from '@/components/ui/badge';
 import {
   Thermometer,
   Droplets,
@@ -15,7 +15,7 @@ import {
   Download,
   RefreshCw,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,6 @@ export default function DashboardPage() {
   const [logs, setLogs] = useState<WeatherLog[]>([]);
   const [stats, setStats] = useState<WeatherStats | null>(null);
   const [insights, setInsights] = useState<WeatherInsights | null>(null);
-  const { toast } = useToast();
 
   const fetchData = async () => {
     try {
@@ -44,11 +43,7 @@ export default function DashboardPage() {
       setInsights(insightsResponse);
     } catch (error: any) {
       console.error('Error fetching data:', error);
-      toast({
-        title: 'Erro ao carregar dados',
-        description: error.message || 'Ocorreu um erro ao buscar os dados.',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Ocorreu um erro ao buscar os dados.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -64,18 +59,12 @@ export default function DashboardPage() {
 
   const handleExportCSV = () => {
     weatherService.exportCSV();
-    toast({
-      title: 'Download iniciado',
-      description: 'O arquivo CSV está sendo baixado.',
-    });
+    toast.info("O arquivo CSV está sendo baixado.");
   };
 
   const handleExportXLSX = () => {
     weatherService.exportXLSX();
-    toast({
-      title: 'Download iniciado',
-      description: 'O arquivo Excel está sendo baixado.',
-    });
+    toast.info("O arquivo Excel está sendo baixado.");
   };
 
   if (loading) {
@@ -122,14 +111,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Badge indicando fonte dos insights */}
-      {insights && (
-        <div className="flex justify-end">
-          <Badge variant={insights.summary.source?.includes('AI') ? 'default' : 'secondary'}>
-            {insights.summary.source || 'Insights'}
-          </Badge>
-        </div>
-      )}
+      
 
       {/* Cards de estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -186,7 +168,7 @@ export default function DashboardPage() {
       {/* Gráfico e Insights */}
       <div className="grid gap-4 md:grid-cols-2">
         <TemperatureChart data={logs} />
-        {insights && <InsightsCard insights={insights.insights} />}
+        {insights && <InsightsCard insights={insights.insights} insightsSummary={insights.summary.source}/>}
       </div>
 
       {/* Tabela de registros */}
