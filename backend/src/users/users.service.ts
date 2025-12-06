@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -8,6 +8,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
@@ -70,6 +72,22 @@ export class UsersService {
       }
     }
 
+    // 🔒 SEGURANÇA: Se estiver mudando role de admin para user
+    if (updateUserDto.role && updateUserDto.role !== 'admin') {
+      const user = await this.userModel.findById(id);
+      
+      if (user && user.role === 'admin') {
+        // Contar quantos admins existem
+        const adminCount = await this.userModel.countDocuments({ role: 'admin' });
+        
+        if (adminCount <= 1) {
+          throw new ConflictException(
+            'Não é possível alterar a função: deve existir pelo menos um administrador no sistema.'
+          );
+        }
+      }
+    }
+
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .select('-password')
@@ -83,11 +101,26 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.userModel.findByIdAndDelete(id).exec();
+    // 🔒 SEGURANÇA: Verificar se é o último admin
+    const user = await this.userModel.findById(id);
     
-    if (!result) {
+    if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
+    
+    if (user.role === 'admin') {
+      // Contar quantos admins existem
+      const adminCount = await this.userModel.countDocuments({ role: 'admin' });
+      
+      if (adminCount <= 1) {
+        this.logger.log('ultimo adm');
+        throw new ConflictException(
+          'Não é possível eliminar o último utilizador administrador. O sistema deve ter pelo menos um administrador.'
+        );
+      }
+    }
+    
+    await this.userModel.findByIdAndDelete(id).exec();
   }
 
   async createDefaultUser(): Promise<void> {
