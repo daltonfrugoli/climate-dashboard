@@ -184,41 +184,94 @@ def map_weather_code(code):
     return weather_codes.get(code, 'Unknown')
 
 
+def wait_for_rabbitmq(max_retries=30, retry_interval=2):
+    """
+    Aguarda RabbitMQ estar disponível com verificação ativa
+    
+    Args:
+        max_retries: Número máximo de tentativas (padrão: 30)
+        retry_interval: Intervalo entre tentativas em segundos (padrão: 2)
+    
+    Returns:
+        bool: True se conectou, False se esgotou tentativas
+    """
+    logger.info("🔍 Checking RabbitMQ availability...")
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Tentar conectar ao RabbitMQ
+            connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
+            channel = connection.channel()
+            
+            # Declarar fila para garantir que está funcionando
+            channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
+            
+            # Fechar conexão de teste
+            connection.close()
+            
+            logger.info(f"✅ RabbitMQ is ready! (attempt {attempt}/{max_retries})")
+            return True
+            
+        except Exception as e:
+            if attempt < max_retries:
+                logger.warning(
+                    f"⏳ RabbitMQ not ready yet (attempt {attempt}/{max_retries}). "
+                    f"Retrying in {retry_interval}s... Error: {str(e)[:50]}"
+                )
+                time.sleep(retry_interval)
+            else:
+                logger.error(
+                    f"❌ Failed to connect to RabbitMQ after {max_retries} attempts"
+                )
+                return False
+    
+    return False
+
+
 def send_to_rabbitmq(data):
     """
-    Envia dados normalizados para a fila RabbitMQ
+    Envia dados normalizados para a fila RabbitMQ com retry
     """
-    try:
-        # Conectar ao RabbitMQ
-        logger.info(f"Connecting to RabbitMQ at {RABBITMQ_URL}")
-        connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
-        channel = connection.channel()
-        
-        # Declarar fila
-        channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
-        
-        # Converter para JSON
-        message = json.dumps(data)
-        
-        # Publicar mensagem
-        channel.basic_publish(
-            exchange='',
-            routing_key=RABBITMQ_QUEUE,
-            body=message,
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # Mensagem persistente
-                content_type='application/json'
+    max_retries = 3
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Conectar ao RabbitMQ
+            connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
+            channel = connection.channel()
+            
+            # Declarar fila
+            channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
+            
+            # Converter para JSON
+            message = json.dumps(data)
+            
+            # Publicar mensagem
+            channel.basic_publish(
+                exchange='',
+                routing_key=RABBITMQ_QUEUE,
+                body=message,
+                properties=pika.BasicProperties(
+                    delivery_mode=2,  # Mensagem persistente
+                    content_type='application/json'
+                )
             )
-        )
-        
-        logger.info(f"✅ Message sent to queue '{RABBITMQ_QUEUE}'")
-        
-        # Fechar conexão
-        connection.close()
-        return True
-    except Exception as e:
-        logger.error(f"Error sending to RabbitMQ: {e}")
-        return False
+            
+            logger.info(f"✅ Message sent to queue '{RABBITMQ_QUEUE}'")
+            
+            # Fechar conexão
+            connection.close()
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error sending to RabbitMQ (attempt {attempt}/{max_retries}): {e}")
+            
+            if attempt < max_retries:
+                time.sleep(5)  # Aguardar antes de retry
+            else:
+                return False
+    
+    return False
 
 
 def collect_and_send():
@@ -250,6 +303,88 @@ def collect_and_send():
     return success
 
 
+def bootstrap_historical_data():
+    """
+    Coleta dados históricos reais das últimas 20 horas ao iniciar.
+    Usa o past_hours da Open-Meteo e envia cada registro normalizado para o RabbitMQ.
+    """
+    logger.info("🔄 Bootstrapping REAL historical data using past_hours...")
+
+    try:
+        from datetime import datetime
+        import time
+
+        past_hours = 20  # conforme solicitado
+        
+        # Requisição única com passado real
+        logger.info(f"🌎 Fetching {past_hours}h historical data from Open-Meteo...")
+        
+        url = 'https://api.open-meteo.com/v1/forecast'
+        params = {
+            'latitude': WEATHER_LATITUDE,
+            'longitude': WEATHER_LONGITUDE,
+            'current': 'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,pressure_msl,apparent_temperature',
+            'hourly': 'temperature_2m,precipitation_probability,relative_humidity_2m,wind_speed_10m,pressure_msl,apparent_temperature,weather_code',
+            'past_hours': past_hours,
+            'timezone': 'America/Sao_Paulo'
+        }
+
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        
+        full_data = response.json()
+        hourly = full_data.get('hourly', {})
+
+        # Garantir que há dados horários válidos
+        if not hourly or 'time' not in hourly:
+            logger.error("❌ Bootstrap failed: hourly data missing from Open-Meteo response")
+            return False
+
+        logger.info(f"📌 Found {len(hourly['time'])} historical hourly entries")
+
+        # Iterar e enviar cada uma das 20 horas
+        for i in range(len(hourly['time'])):
+            try:
+                # Construir um "fake current" baseado em cada hora
+                fake_current = {
+                    "time": hourly["time"][i],
+                    "temperature_2m": hourly.get("temperature_2m", [None])[i],
+                    "relative_humidity_2m": hourly.get("relative_humidity_2m", [None])[i],
+                    "wind_speed_10m": hourly.get("wind_speed_10m", [None])[i],
+                    "pressure_msl": hourly.get("pressure_msl", [None])[i],
+                    "apparent_temperature": hourly.get("apparent_temperature", [None])[i],
+                    "weather_code": hourly.get("weather_code", [None])[i]
+                }
+
+                # Criar estrutura semelhante à resposta original para reaproveitar normalize
+                simulated_data = {
+                    "current": fake_current,
+                    "hourly": full_data.get("hourly", {})
+                }
+
+                normalized = normalize_open_meteo_data(simulated_data)
+
+                if normalized:
+                    if send_to_rabbitmq(normalized):
+                        logger.info(f"📨 Historical sent: {fake_current['time']} | {normalized['temperature']}°C")
+                    else:
+                        logger.warning(f"⚠️ Failed sending historical data for {fake_current['time']}")
+
+                # Delay suave para evitar congestionar a fila
+                time.sleep(0.2)
+
+            except Exception as ex:
+                logger.error(f"⚠️ Error processing historical entry #{i}: {ex}")
+
+        logger.info(f"✅ Bootstrap complete! Sent last {past_hours} hours successfully 🎉")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Bootstrap failed: {e}")
+        return False
+
+
+
 def main():
     """
     Loop principal do coletor
@@ -263,7 +398,11 @@ def main():
     logger.info("Waiting 10 seconds for RabbitMQ to be ready...")
     time.sleep(10)
     
+    # 🔄 BOOTSTRAP: Coletar dados históricos na primeira vez
+    bootstrap_historical_data()
+    
     # Loop infinito de coleta
+    logger.info("📡 Starting regular collection cycle...")
     while True:
         try:
             collect_and_send()
