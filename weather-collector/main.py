@@ -172,31 +172,32 @@ def map_weather_code(code):
     Mapeia códigos de clima do Open-Meteo para descrições
     """
     weather_codes = {
-        0: 'Clear Sky',
-        1: 'Mainly Clear',
-        2: 'Partly Cloudy',
-        3: 'Overcast',
-        45: 'Foggy',
-        48: 'Depositing Rime Fog',
-        51: 'Light Drizzle',
-        53: 'Moderate Drizzle',
-        55: 'Dense Drizzle',
-        61: 'Slight Rain',
-        63: 'Moderate Rain',
-        65: 'Heavy Rain',
-        71: 'Slight Snow',
-        73: 'Moderate Snow',
-        75: 'Heavy Snow',
-        77: 'Snow Grains',
-        80: 'Slight Rain Showers',
-        81: 'Moderate Rain Showers',
-        82: 'Violent Rain Showers',
-        85: 'Slight Snow Showers',
-        86: 'Heavy Snow Showers',
-        95: 'Thunderstorm',
-        96: 'Thunderstorm with Slight Hail',
-        99: 'Thunderstorm with Heavy Hail'
+        0: 'Céu Limpo',
+        1: 'Predominantemente Limpo',
+        2: 'Parcialmente Nublado',
+        3: 'Encoberto',
+        45: 'Neblina',
+        48: 'Neblina com Geada',
+        51: 'Garoa Fraca',
+        53: 'Garoa Moderada',
+        55: 'Garoa Intensa',
+        61: 'Chuva Fraca',
+        63: 'Chuva Moderada',
+        65: 'Chuva Forte',
+        71: 'Neve Fraca',
+        73: 'Neve Moderada',
+        75: 'Neve Forte',
+        77: 'Grãos de Neve',
+        80: 'Pancadas de Chuva Fraca',
+        81: 'Pancadas de Chuva Moderada',
+        82: 'Pancadas de Chuva Forte',
+        85: 'Pancadas de Neve Fraca',
+        86: 'Pancadas de Neve Forte',
+        95: 'Tempestade',
+        96: 'Tempestade com Granizo Fraco',
+        99: 'Tempestade com Granizo Forte'
     }
+
     return weather_codes.get(code, 'Unknown')
 
 
@@ -359,7 +360,7 @@ def bootstrap_historical_data():
 
         logger.info(f"📌 Found {len(hourly['time'])} historical hourly entries")
 
-        historical_limit = past_hours + 1
+        historical_limit = past_hours
 
         # 2. Garanta que há dados suficientes (evita erro se a resposta for incompleta)
         if len(hourly.get('time', [])) < historical_limit:
@@ -389,7 +390,6 @@ def bootstrap_historical_data():
                 normalized = normalize_open_meteo_data(simulated_data)
 
                 if normalized:
-                    send_to_rabbitmq(normalized)
                     if send_to_rabbitmq(normalized):
                         logger.info(f"📨 Historical sent: {fake_current['time']} | {normalized['temperature']}°C")
                     else:
