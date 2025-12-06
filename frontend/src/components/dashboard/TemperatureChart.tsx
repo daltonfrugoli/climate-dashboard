@@ -10,7 +10,7 @@ import {
   Legend,
 } from 'recharts';
 import { WeatherLog } from '@/types';
-import { format } from 'date-fns';
+import { formatChartTime, formatChartDate } from '@/lib/date-utils';
 
 interface TemperatureChartProps {
   data: WeatherLog[];
@@ -22,8 +22,8 @@ export default function TemperatureChart({ data }: TemperatureChartProps) {
     .slice()
     .reverse()
     .map((log) => ({
-      time: format(new Date(log.timestamp), 'HH:mm'),
-      date: format(new Date(log.timestamp), 'dd/MM'),
+      time: formatChartTime(log.timestamp),
+      date: formatChartDate(log.timestamp),
       temperature: log.temperature,
       feelsLike: log.feelsLike || log.temperature,
       humidity: log.humidity,

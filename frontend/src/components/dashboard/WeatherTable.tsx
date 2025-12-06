@@ -8,7 +8,8 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WeatherLog } from '@/types';
-import { format } from 'date-fns';
+import { formatDateTime } from '@/lib/date-utils';
+import { Button } from '@/components/ui/button';
 
 interface WeatherTableProps {
   data: WeatherLog[];
@@ -19,6 +20,14 @@ export default function WeatherTable({ data }: WeatherTableProps) {
     <Card className="col-span-2">
       <CardHeader>
         <CardTitle>Registros Recentes</CardTitle>
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={() => console.log(data)}
+            //disabled={refreshing}
+          >
+            Atualizar
+          </Button>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -43,7 +52,7 @@ export default function WeatherTable({ data }: WeatherTableProps) {
                 data.map((log) => (
                   <TableRow key={log._id}>
                     <TableCell className="font-medium">
-                      {format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm')}
+                      {formatDateTime(log.timestamp)}
                     </TableCell>
                     <TableCell>{log.temperature.toFixed(1)}°C</TableCell>
                     <TableCell>{log.humidity.toFixed(0)}%</TableCell>
