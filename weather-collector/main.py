@@ -4,6 +4,7 @@ import json
 import logging
 import requests
 import pika
+import pytz
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -102,6 +103,21 @@ def normalize_open_meteo_data(data):
         hourly = data.get('hourly', {})
         rain_prob = hourly.get('precipitation_probability', [0])[0] if hourly.get('precipitation_probability') else 0
         
+        time_str = current.get('time', datetime.now().isoformat())
+        
+        # 1. Definir o fuso horário da fonte (o que foi pedido ao Open-Meteo)
+        local_tz = pytz.timezone('America/Sao_Paulo')
+        
+        # 2. Parsear a string e LOCALIZAR com o fuso horário BRT/BRST
+        #    O Open-Meteo retorna a hora local, mas sem o indicador de fuso
+        localized_dt = local_tz.localize(datetime.fromisoformat(time_str))
+        
+        # 3. CONVERTER para UTC (padrão correto para APIs e banco de dados)
+        utc_dt = localized_dt.astimezone(pytz.utc)
+        
+        # 4. Formatar como ISO 8601 com o indicador 'Z'
+        timestamp_utc = utc_dt.isoformat().replace('+00:00', 'Z')
+        
         normalized = {
             'location': f"Lat: {WEATHER_LATITUDE}, Lon: {WEATHER_LONGITUDE}",
             'temperature': round(current.get('temperature_2m', 0), 2),
@@ -111,7 +127,7 @@ def normalize_open_meteo_data(data):
             'rainProbability': rain_prob,
             'pressure': round(current.get('pressure_msl', 0), 2),
             'feelsLike': round(current.get('apparent_temperature', 0), 2),
-            'timestamp': current.get('time', datetime.now().isoformat()),
+            'timestamp': timestamp_utc,
             'rawData': current
         }
         
@@ -334,6 +350,7 @@ def bootstrap_historical_data():
         
         full_data = response.json()
         hourly = full_data.get('hourly', {})
+        
 
         # Garantir que há dados horários válidos
         if not hourly or 'time' not in hourly:
@@ -342,8 +359,15 @@ def bootstrap_historical_data():
 
         logger.info(f"📌 Found {len(hourly['time'])} historical hourly entries")
 
+        historical_limit = past_hours + 1
+
+        # 2. Garanta que há dados suficientes (evita erro se a resposta for incompleta)
+        if len(hourly.get('time', [])) < historical_limit:
+            historical_limit = len(hourly.get('time', []))
+            logger.warning("⚠️ Open-Meteo retornou menos de 21 entradas. Processando o que foi recebido.")
+
         # Iterar e enviar cada uma das 20 horas
-        for i in range(len(hourly['time'])):
+        for i in range(historical_limit):
             try:
                 # Construir um "fake current" baseado em cada hora
                 fake_current = {
@@ -365,6 +389,7 @@ def bootstrap_historical_data():
                 normalized = normalize_open_meteo_data(simulated_data)
 
                 if normalized:
+                    send_to_rabbitmq(normalized)
                     if send_to_rabbitmq(normalized):
                         logger.info(f"📨 Historical sent: {fake_current['time']} | {normalized['temperature']}°C")
                     else:
@@ -376,7 +401,6 @@ def bootstrap_historical_data():
             except Exception as ex:
                 logger.error(f"⚠️ Error processing historical entry #{i}: {ex}")
 
-        logger.info(f"✅ Bootstrap complete! Sent last {past_hours} hours successfully 🎉")
         return True
 
     except Exception as e:
