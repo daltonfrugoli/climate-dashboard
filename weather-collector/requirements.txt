@@ -12,3 +12,6 @@ python-dateutil==2.8.2
 
 # JSON handling (built-in, but good to have)
 simplejson==3.19.2
+
+# Time zone lib
+pytz
