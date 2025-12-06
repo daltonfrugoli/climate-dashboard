@@ -12,9 +12,10 @@ import {
 
 interface InsightsCardProps {
   insights: Insight[];
+  insightsSummary?: string;
 }
 
-export default function InsightsCard({ insights }: InsightsCardProps) {
+export default function InsightsCard({ insights, insightsSummary }: InsightsCardProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case 'warning':
@@ -54,6 +55,14 @@ export default function InsightsCard({ insights }: InsightsCardProps) {
             <Lightbulb className="h-5 w-5" />
             Insights de IA
           </CardTitle>
+          {/* Badge indicando fonte dos insights */}
+          {insights && (
+            <div className="flex justify-end">
+              <Badge variant={insightsSummary?.includes('AI') ? 'default' : 'secondary'}>
+                {insightsSummary || 'Insights'}
+              </Badge>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
