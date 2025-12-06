@@ -99,171 +99,6 @@ export class WeatherService {
     };
   }
 
-  // async generateInsights(): Promise<any> {
-  //   const stats = await this.getStats(7);
-  //   const latest = await this.getLatest();
-
-  //   if (!latest) {
-  //     return {
-  //       message: 'No weather data available yet',
-  //       insights: [],
-  //     };
-  //   }
-
-  //   interface Insight {
-  //       type: string; 
-  //       category: string; 
-  //       message: string;
-  //       value: string;
-  //       recommendation: string;
-  //   }
-
-  //   const insights: Insight[] = [];
-
-  //   // Temperatura
-  //   if (stats.avgTemperature > 30) {
-  //     insights.push({
-  //       type: 'warning',
-  //       category: 'temperature',
-  //       message: 'High average temperature detected in the last 7 days',
-  //       value: `${stats.avgTemperature.toFixed(1)}°C`,
-  //       recommendation: 'Stay hydrated and avoid prolonged sun exposure',
-  //     });
-  //   } else if (stats.avgTemperature < 15) {
-  //     insights.push({
-  //       type: 'info',
-  //       category: 'temperature',
-  //       message: 'Cool weather in the last 7 days',
-  //       value: `${stats.avgTemperature.toFixed(1)}°C`,
-  //       recommendation: 'Wear warm clothing',
-  //     });
-  //   } else {
-  //     insights.push({
-  //       type: 'success',
-  //       category: 'temperature',
-  //       message: 'Pleasant temperature range',
-  //       value: `${stats.avgTemperature.toFixed(1)}°C`,
-  //       recommendation: 'Ideal conditions for outdoor activities',
-  //     });
-  //   }
-
-  //   // Umidade
-  //   if (stats.avgHumidity > 80) {
-  //     insights.push({
-  //       type: 'warning',
-  //       category: 'humidity',
-  //       message: 'High humidity levels',
-  //       value: `${stats.avgHumidity.toFixed(1)}%`,
-  //       recommendation: 'May feel uncomfortable, use dehumidifier if indoors',
-  //     });
-  //   } else if (stats.avgHumidity < 30) {
-  //     insights.push({
-  //       type: 'warning',
-  //       category: 'humidity',
-  //       message: 'Low humidity levels',
-  //       value: `${stats.avgHumidity.toFixed(1)}%`,
-  //       recommendation: 'Stay hydrated and use moisturizer',
-  //     });
-  //   }
-
-  //   // Vento
-  //   if (stats.avgWindSpeed > 30) {
-  //     insights.push({
-  //       type: 'warning',
-  //       category: 'wind',
-  //       message: 'Strong winds detected',
-  //       value: `${stats.avgWindSpeed.toFixed(1)} km/h`,
-  //       recommendation: 'Be cautious with outdoor activities',
-  //     });
-  //   }
-
-  //   // Tendência de temperatura
-  //   const temperatureTrend = this.calculateTrend(
-  //     await this.weatherLogModel
-  //       .find({ timestamp: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } })
-  //       .sort({ timestamp: 1 })
-  //       .select('temperature timestamp')
-  //       .exec()
-  //   );
-
-  //   insights.push({
-  //     type: 'info',
-  //     category: 'trend',
-  //     message: `Temperature trend: ${temperatureTrend}`,
-  //     value: '',
-  //     recommendation: temperatureTrend === 'rising' 
-  //       ? 'Temperatures are increasing' 
-  //       : temperatureTrend === 'falling'
-  //       ? 'Temperatures are decreasing'
-  //       : 'Stable temperature pattern',
-  //   });
-
-  //   // Índice de conforto
-  //   const comfortIndex = this.calculateComfortIndex(
-  //     stats.avgTemperature,
-  //     stats.avgHumidity
-  //   );
-
-  //   insights.push({
-  //     type: comfortIndex.type,
-  //     category: 'comfort',
-  //     message: comfortIndex.message,
-  //     value: `${comfortIndex.score}/100`,
-  //     recommendation: comfortIndex.recommendation,
-  //   });
-
-  //   return {
-  //     summary: {
-  //       period: '7 days',
-  //       dataPoints: stats.count,
-  //       avgTemperature: `${stats.avgTemperature.toFixed(1)}°C`,
-  //       avgHumidity: `${stats.avgHumidity.toFixed(1)}%`,
-  //       temperatureRange: `${stats.minTemperature.toFixed(1)}°C - ${stats.maxTemperature.toFixed(1)}°C`,
-  //     },
-  //     insights,
-  //     generatedAt: new Date(),
-  //   };
-  // }
-
-  // async generateInsightsWithAI(): Promise<any> {
-  //   if (!this.aiService.isAvailable()) {
-  //     // Fallback para insights baseados em regras
-  //     return this.generateInsights();
-  //   }
-
-  //   try {
-  //     const stats = await this.getStats(7);
-  //     const latest = await this.getLatest();
-
-  //     const aiInsights = await this.aiService.generateInsights({
-  //       avgTemperature: stats.avgTemperature,
-  //       avgHumidity: stats.avgHumidity,
-  //       avgWindSpeed: stats.avgWindSpeed,
-  //       maxTemperature: stats.maxTemperature,
-  //       minTemperature: stats.minTemperature,
-  //       latestCondition: latest?.condition || 'Unknown',
-  //       dataPoints: stats.count,
-  //     });
-
-  //     return {
-  //       summary: {
-  //         period: '7 days',
-  //         dataPoints: stats.count,
-  //         avgTemperature: `${stats.avgTemperature.toFixed(1)}°C`,
-  //         avgHumidity: `${stats.avgHumidity.toFixed(1)}%`,
-  //         temperatureRange: `${stats.minTemperature.toFixed(1)}°C - ${stats.maxTemperature.toFixed(1)}°C`,
-  //         generatedBy: 'LLaMA 3 (Groq AI)',
-  //       },
-  //       insights: aiInsights,
-  //       generatedAt: new Date(),
-  //     };
-  //   } catch (error) {
-  //     console.error('Error generating AI insights:', error);
-  //     // Fallback para regras
-  //     return this.generateInsights();
-  //   }
-  // }
-
   async generateInsights(): Promise<any> {
     const stats = await this.getStats(7);
     const latest = await this.getLatest();
@@ -307,10 +142,117 @@ export class WeatherService {
 
   // Renomear o método antigo para deixar claro que são regras
   private async generateInsightsWithRules(stats: any, latest: any): Promise<any> {
-    const insights = [];
 
-    // ... [TODO O CÓDIGO ATUAL DE INSIGHTS POR REGRAS]
-    // (Temperatura, umidade, vento, tendência, conforto)
+    if (!latest) {
+      return {
+        message: 'No weather data available yet',
+        insights: [],
+      };
+    }
+
+    interface Insight {
+        type: string; 
+        category: string; 
+        message: string;
+        value: string;
+        recommendation: string;
+    }
+
+    const insights: Insight[] = [];
+
+    // Temperatura
+    if (stats.avgTemperature > 30) {
+      insights.push({
+        type: 'warning',
+        category: 'temperatura',
+        message: 'Temperatura média elevada detectada nos últimos 7 dias',
+        value: `${stats.avgTemperature.toFixed(1)}°C`,
+        recommendation: 'Mantenha-se hidratado e evite exposição prolongada ao sol',
+      });
+    } else if (stats.avgTemperature < 15) {
+      insights.push({
+        type: 'info',
+        category: 'temperatura',
+        message: 'Clima frio nos últimos 7 dias',
+        value: `${stats.avgTemperature.toFixed(1)}°C`,
+        recommendation: 'Use roupas quentes',
+      });
+    } else {
+      insights.push({
+        type: 'success',
+        category: 'temperatura',
+        message: 'Faixa de temperatura agradável',
+        value: `${stats.avgTemperature.toFixed(1)}°C`,
+        recommendation: 'Condições ideais para atividades ao ar livre',
+      });
+    }
+
+    // Umidade
+    if (stats.avgHumidity > 80) {
+      insights.push({
+        type: 'warning',
+        category: 'umidade',
+        message: 'Níveis elevados de umidade',
+        value: `${stats.avgHumidity.toFixed(1)}%`,
+        recommendation: 'Pode causar desconforto, use desumidificador em ambientes fechados',
+      });
+    } else if (stats.avgHumidity < 30) {
+      insights.push({
+        type: 'warning',
+        category: 'umidade',
+        message: 'Níveis baixos de umidade',
+        value: `${stats.avgHumidity.toFixed(1)}%`,
+        recommendation: 'Mantenha-se hidratado e use hidratante',
+      });
+    }
+
+    // Vento
+    if (stats.avgWindSpeed > 30) {
+      insights.push({
+        type: 'warning',
+        category: 'vento',
+        message: 'Ventos fortes detectados',
+        value: `${stats.avgWindSpeed.toFixed(1)} km/h`,
+        recommendation: 'Tenha cuidado com atividades ao ar livre',
+      });
+    }
+
+    // Tendência de temperatura
+    const temperatureTrend = this.calculateTrend(
+      await this.weatherLogModel
+        .find({ timestamp: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } })
+        .sort({ timestamp: 1 })
+        .select('temperature timestamp')
+        .exec()
+    );
+
+    insights.push({
+      type: 'info',
+      category: 'tendência',
+      message: `Tendência de temperatura: ${temperatureTrend === 'rising' ? 'subindo' : temperatureTrend === 'falling' ? 'caindo' : 'estável'}`,
+      value: '',
+      recommendation: temperatureTrend === 'rising' 
+        ? 'As temperaturas estão aumentando' 
+        : temperatureTrend === 'falling'
+        ? 'As temperaturas estão diminuindo'
+        : 'Padrão de temperatura estável',
+    });
+
+    // Índice de conforto
+    const comfortIndex = this.calculateComfortIndex(
+      stats.avgTemperature,
+      stats.avgHumidity
+    );
+
+    insights.push({
+      type: comfortIndex.type,
+      category: 'conforto',
+      message: comfortIndex.message,
+      value: `${comfortIndex.score}/100`,
+      recommendation: comfortIndex.recommendation,
+    });
+
+
 
     return {
       summary: {
@@ -425,17 +367,17 @@ export class WeatherService {
     // Temperatura ideal: 18-24°C
     if (temp < 18) {
       score -= (18 - temp) * 3;
-      message = 'Cold weather conditions';
-      recommendation = 'Wear warm clothing';
+      message = 'Condições climáticas frias';
+      recommendation = 'Use roupas quentes';
       type = 'warning';
     } else if (temp > 24) {
       score -= (temp - 24) * 3;
-      message = 'Warm weather conditions';
-      recommendation = 'Stay cool and hydrated';
+      message = 'Condições climáticas quentes';
+      recommendation = 'Mantenha-se fresco e hidratado';
       type = 'warning';
     } else {
-      message = 'Comfortable temperature';
-      recommendation = 'Ideal weather conditions';
+      message = 'Temperatura confortável';
+      recommendation = 'Condições climáticas ideais';
     }
 
     // Umidade ideal: 40-60%

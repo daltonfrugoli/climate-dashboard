@@ -51,7 +51,7 @@ export class AIService {
         messages: [
           {
             role: 'system',
-            content: 'You are a weather analysis assistant. Analyze weather data and provide insights in JSON format. Be concise and helpful. Always respond in valid JSON.',
+            content: 'You are a weather analysis assistant. Analyze weather data and provide insights in JSON format. Be concise and helpful. Always respond in valid JSON. **All text must be written in Brazilian Portuguese (pt-BR).**',
           },
           {
             role: 'user',
@@ -78,38 +78,38 @@ export class AIService {
 
   private buildPrompt(data: any): string {
     return `
-Analyze this weather data from the last 7 days and generate 4-6 insights:
+      Analyze this weather data from the last 7 days and generate 4-6 insights:
 
-**Statistics:**
-- Average Temperature: ${data.avgTemperature.toFixed(1)}°C
-- Temperature Range: ${data.minTemperature.toFixed(1)}°C to ${data.maxTemperature.toFixed(1)}°C
-- Average Humidity: ${data.avgHumidity.toFixed(1)}%
-- Average Wind Speed: ${data.avgWindSpeed.toFixed(1)} km/h
-- Latest Condition: ${data.latestCondition}
-- Data Points: ${data.dataPoints}
+      **Statistics:**
+      - Average Temperature: ${data.avgTemperature.toFixed(1)}°C
+      - Temperature Range: ${data.minTemperature.toFixed(1)}°C to ${data.maxTemperature.toFixed(1)}°C
+      - Average Humidity: ${data.avgHumidity.toFixed(1)}%
+      - Average Wind Speed: ${data.avgWindSpeed.toFixed(1)} km/h
+      - Latest Condition: ${data.latestCondition}
+      - Data Points: ${data.dataPoints}
 
-**Generate insights in this EXACT JSON format:**
-{
-  "insights": [
-    {
-      "type": "warning|success|info",
-      "category": "temperature|humidity|wind|general",
-      "message": "Short insight message (max 80 chars)",
-      "value": "Relevant numeric value with unit",
-      "recommendation": "Actionable recommendation (max 100 chars)"
-    }
-  ]
-}
+      **Generate insights in this EXACT JSON format:**
+      {
+        "insights": [
+          {
+            "type": "warning|success|info",
+            "category": "temperatura|umidade|vento|geral",
+            "message": "Short insight message (max 80 chars)",
+            "value": "Relevant numeric value with unit",
+            "recommendation": "Actionable recommendation (max 100 chars)"
+          }
+        ]
+      }
 
-**Guidelines:**
-1. Be concise and practical
-2. Focus on health and comfort
-3. Provide actionable recommendations
-4. Use appropriate types: "warning" for alerts, "success" for good conditions, "info" for neutral
-5. Consider Brazilian climate context
-6. Generate 4-6 insights covering different aspects
+      **Guidelines:**
+      1. Be concise and practical
+      2. Focus on health and comfort
+      3. Provide actionable recommendations
+      4. Use appropriate types: "warning" for alerts, "success" for good conditions, "info" for neutral
+      5. Consider Brazilian climate context
+      6. Generate 4-6 insights covering different aspects
 
-Return ONLY valid JSON, no markdown, no explanations.
+      Return ONLY valid JSON, no markdown, no explanations.
     `.trim();
   }
 
