@@ -22,7 +22,6 @@ import { WeatherModule } from './weather/weather.module';
     AuthModule,
     UsersModule,
     WeatherModule,
-    // ExternalApiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
