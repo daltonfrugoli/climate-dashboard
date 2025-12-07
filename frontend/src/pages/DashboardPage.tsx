@@ -81,14 +81,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard de Clima</h1>
           <p className="text-muted-foreground">
-            Monitoramento em tempo real com insights de IA
+            Monitoramento da cidade de São Paulo-SP em tempo real com insights de IA
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
             CSV
@@ -103,13 +103,12 @@ export default function DashboardPage() {
             onClick={fetchData}
             disabled={refreshing}
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
         </div>
       </div>
+
 
       
 

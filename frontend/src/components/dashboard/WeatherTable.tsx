@@ -9,7 +9,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WeatherLog } from '@/types';
 import { formatDateTime } from '@/lib/date-utils';
-import { Button } from '@/components/ui/button';
 
 interface WeatherTableProps {
   data: WeatherLog[];
@@ -20,14 +19,6 @@ export default function WeatherTable({ data }: WeatherTableProps) {
     <Card className="col-span-2">
       <CardHeader>
         <CardTitle>Registros Recentes</CardTitle>
-        <Button
-            variant="outline"
-            size="sm"
-            onClick={() => console.log(data)}
-            //disabled={refreshing}
-          >
-            Atualizar
-          </Button>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">

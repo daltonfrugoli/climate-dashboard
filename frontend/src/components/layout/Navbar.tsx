@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Cloud, Users, LogOut, User, Menu, X } from "lucide-react"
 import { useState } from "react"
+import ThemeToggle from "@/components/theme/ThemeToggle"
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -82,6 +83,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <ThemeToggle/>
           </div>
 
           {/* ---------- BOTÃO HAMBÚRGUER (MOBILE) ---------- */}
