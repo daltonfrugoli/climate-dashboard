@@ -26,11 +26,6 @@ COLLECTION_INTERVAL = int(os.getenv('WEATHER_COLLECTION_INTERVAL', '3600'))
 RABBITMQ_URL = os.getenv('RABBITMQ_URL', 'amqp://admin:admin123@rabbitmq:5672')
 RABBITMQ_QUEUE = os.getenv('RABBITMQ_QUEUE', 'weather-data')
 
-# OpenWeather (opcional)
-OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '')
-WEATHER_CITY = os.getenv('WEATHER_CITY', 'Pindamonhangaba')
-WEATHER_COUNTRY_CODE = os.getenv('WEATHER_COUNTRY_CODE', 'BR')
-
 
 def fetch_open_meteo_data():
     """
@@ -56,35 +51,6 @@ def fetch_open_meteo_data():
         return data
     except Exception as e:
         logger.error(f"Error fetching Open-Meteo data: {e}")
-        return None
-
-
-def fetch_openweather_data():
-    """
-    Busca dados climáticos da API OpenWeather (alternativa)
-    """
-    try:
-        if not OPENWEATHER_API_KEY:
-            logger.error("OpenWeather API key not configured")
-            return None
-        
-        url = 'https://api.openweathermap.org/data/2.5/weather'
-        params = {
-            'q': f"{WEATHER_CITY},{WEATHER_COUNTRY_CODE}",
-            'appid': OPENWEATHER_API_KEY,
-            'units': 'metric'
-        }
-        
-        logger.info(f"Fetching weather data from OpenWeather for {WEATHER_CITY}")
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()
-        
-        data = response.json()
-        logger.info("Successfully fetched data from OpenWeather")
-        
-        return data
-    except Exception as e:
-        logger.error(f"Error fetching OpenWeather data: {e}")
         return None
 
 
@@ -135,35 +101,6 @@ def normalize_open_meteo_data(data):
         return normalized
     except Exception as e:
         logger.error(f"Error normalizing Open-Meteo data: {e}")
-        return None
-
-
-def normalize_openweather_data(data):
-    """
-    Normaliza dados do OpenWeather para formato padrão
-    """
-    try:
-        main = data.get('main', {})
-        wind = data.get('wind', {})
-        weather = data.get('weather', [{}])[0]
-        
-        normalized = {
-            'location': f"{data.get('name', WEATHER_CITY)}, {WEATHER_COUNTRY_CODE}",
-            'temperature': round(main.get('temp', 0), 2),
-            'humidity': round(main.get('humidity', 0), 2),
-            'windSpeed': round(wind.get('speed', 0) * 3.6, 2),  # m/s para km/h
-            'condition': weather.get('description', 'Unknown').title(),
-            'rainProbability': 0,  # OpenWeather free não fornece probabilidade
-            'pressure': round(main.get('pressure', 0), 2),
-            'feelsLike': round(main.get('feels_like', 0), 2),
-            'timestamp': datetime.now().isoformat(),
-            'rawData': data
-        }
-        
-        logger.info(f"Normalized data: Temp={normalized['temperature']}°C, Humidity={normalized['humidity']}%")
-        return normalized
-    except Exception as e:
-        logger.error(f"Error normalizing OpenWeather data: {e}")
         return None
 
 
@@ -298,13 +235,8 @@ def collect_and_send():
     logger.info("=" * 60)
     logger.info("Starting weather data collection")
     
-    # Buscar dados da API escolhida
-    if WEATHER_API == 'openweather':
-        raw_data = fetch_openweather_data()
-        normalized_data = normalize_openweather_data(raw_data) if raw_data else None
-    else:  # Default: open-meteo
-        raw_data = fetch_open_meteo_data()
-        normalized_data = normalize_open_meteo_data(raw_data) if raw_data else None
+    raw_data = fetch_open_meteo_data()
+    normalized_data = normalize_open_meteo_data(raw_data) if raw_data else None
     
     if not normalized_data:
         logger.error("Failed to collect weather data")
