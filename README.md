@@ -20,7 +20,6 @@ Este projeto integra múltiplas linguagens e tecnologias para criar um pipeline 
 - ✅ **IA Integrada**: Geração de insights usando LLaMA 3 via Groq API
 - ✅ **CRUD de Usuários**: Sistema completo de autenticação e gerenciamento
 - ✅ **Exportação de Dados**: CSV e XLSX para análise externa
-- ✅ **Integração Extra**: PokéAPI com listagem paginada
 - ✅ **Testes Completos**: 33 testes unitários e de integração
 - ✅ **Docker Compose**: Infraestrutura completa containerizada
 
@@ -93,12 +92,6 @@ Este projeto integra múltiplas linguagens e tecnologias para criar um pipeline 
 ### IA & APIs Externas
 - **Groq API** - LLaMA 3 para geração de insights inteligentes
 - **Open-Meteo** - Dados climáticos gratuitos e precisos
-- **PokéAPI** - Integração opcional com API pública paginada
-
-### DevOps
-- **Docker** & **Docker Compose** - Containerização completa
-- **Jest** - Framework de testes unitários e integração
-- **ESLint** & **Prettier** - Qualidade e formatação de código
 
 ---
 
@@ -123,7 +116,7 @@ Este é o método mais simples e funciona em qualquer sistema operacional.
 #### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/desafio-gdash-2025-02.git
+git clone -b dalton-frugoli-fernandes-almeida https://github.com/seu-usuario/desafio-gdash-2025-02.git
 cd desafio-gdash-2025-02
 ```
 
@@ -137,35 +130,33 @@ Edite o arquivo `.env` com suas configurações (as principais variáveis já v�
 
 ```env
 # MongoDB
-MONGODB_URI=mongodb://mongo:27017/weather-db
+# Troque "USUARIO" e "SENHA" por credenciais de sua escolha
+MONGODB_URI=mongodb://USUARIO:SENHA@mongo:27017/gdash-weather?authSource=admin
+MONGO_INITDB_ROOT_USERNAME=USUARIO
+MONGO_INITDB_ROOT_PASSWORD=SENHA
 
 # RabbitMQ
-RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-RABBITMQ_QUEUE=weather_data
-
-# JWT
-JWT_SECRET=seu-secret-super-seguro-aqui
-JWT_EXPIRES_IN=7d
-
-# Default User
-DEFAULT_USER_EMAIL=admin@example.com
-DEFAULT_USER_PASSWORD=123456
-DEFAULT_USER_NAME=Admin User
+# Troque "USUARIO" e "SENHA" por credenciais de sua escolha
+RABBITMQ_URL=amqp://USUARIO:SENHA@rabbitmq:5672
+RABBITMQ_USER=USUARIO
+RABBITMQ_PASSWORD=SENHA
 
 # Groq API (opcional - para IA)
+# Troque "CHAVE_DA_GROQ" por sua própria chave 
 GROQ_API_KEY=sua-chave-groq-aqui
 
-# Weather API Configuration
-WEATHER_API_URL=https://api.open-meteo.com/v1/forecast
-WEATHER_LOCATION_LAT=-22.9249
-WEATHER_LOCATION_LON=-45.4619
-WEATHER_LOCATION_NAME=Pindamonhangaba, SP
+# (OPCIONAL) Default User
+# Fique à vontade para trocar as credenciais, mas lembre-se delas no momento do login
+DEFAULT_USER_EMAIL=admin@example.com
+DEFAULT_USER_PASSWORD=123456
+DEFAULT_USER_NAME=Administrador
+
 ```
 
 #### 3. Inicie todos os serviços
 
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
 Este comando irá:
@@ -181,18 +172,18 @@ Este comando irá:
 docker-compose logs -f
 
 # Ver logs de um serviço específico
-docker-compose logs -f api
+docker-compose logs -f backend
 docker-compose logs -f frontend
-docker-compose logs -f go-worker
-docker-compose logs -f python-collector
+docker-compose logs -f worker-go
+docker-compose logs -f weather-collector
 ```
 
 #### 5. Acesse o sistema
 
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3000
-- **Documentação Swagger**: http://localhost:3000/api
-- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
+- **Backend API**: http://localhost:3000/api
+- **Documentação Swagger**: http://localhost:3000/api/docs
+- **RabbitMQ Management**: http://localhost:15672
 
 #### 6. Login no sistema
 
@@ -280,6 +271,7 @@ python main.py
 
 ---
 
+
 ## 🧪 Executando os Testes
 
 ### Testes do Backend (NestJS)
@@ -336,7 +328,7 @@ Time:        ~3s
 
 ```http
 POST   /auth/login              # Login de usuário
-POST   /auth/register           # Registro de novo usuário
+GET    /auth/validate           # Validar token JWT
 GET    /auth/profile            # Perfil do usuário autenticado
 ```
 
@@ -353,10 +345,6 @@ GET    /weather/export/csv      # Exportar dados em CSV
 GET    /weather/export/xlsx     # Exportar dados em XLSX
 ```
 
-**Exemplo de query params para listagem:**
-```
-GET /weather/logs?location=Pindamonhangaba&startDate=2024-12-01&endDate=2024-12-06&limit=50&skip=0
-```
 
 ### 👥 Usuários
 
@@ -368,18 +356,11 @@ PATCH  /users/:id               # Atualizar usuário
 DELETE /users/:id               # Deletar usuário
 ```
 
-### 🎮 Pokémon (Integração Opcional)
-
-```http
-GET    /pokemon?limit=20&offset=0    # Listar pokémons (paginado)
-GET    /pokemon/:id                  # Detalhes de um pokémon
-```
-
 ### 📚 Documentação Interativa
 
 Acesse a documentação Swagger completa em:
 ```
-http://localhost:3000/api
+http://localhost:3000/api/docs
 ```
 
 ---
@@ -569,10 +550,6 @@ Dashboard moderno construído com React, Vite, Tailwind CSS e shadcn/ui.
 - Modais para criar/editar
 - Validação de formulários
 
-#### 4. 🎮 Pokémon (`/pokemon`) - Opcional
-- Listagem paginada
-- Busca por nome
-- Página de detalhes com informações completas
 
 ### Componentes shadcn/ui Utilizados
 
@@ -591,13 +568,6 @@ Dashboard moderno construído com React, Vite, Tailwind CSS e shadcn/ui.
 - Proteção de rotas via Guards (NestJS)
 - Validação de sessão em todas as requisições
 
-### Medidas de Segurança
-
-- ✅ Senhas criptografadas com **bcrypt** (10 salt rounds)
-- ✅ Validação de inputs com **class-validator**
-- ✅ CORS configurado adequadamente
-- ✅ Helmet para headers de segurança HTTP
-- ✅ Rate limiting (opcional, configurável)
 
 ### Usuário Padrão
 
@@ -613,78 +583,16 @@ Role: admin
 
 ---
 
-## 🐛 Troubleshooting
-
-### Containers não iniciam
-
-```bash
-# Verificar logs
-docker-compose logs
-
-# Recriar containers do zero
-docker-compose down -v
-docker-compose up --build
-```
-
-### MongoDB não conecta
-
-```bash
-# Verificar se o container está rodando
-docker ps | grep mongo
-
-# Ver logs do MongoDB
-docker-compose logs mongo
-
-# Verificar variável MONGODB_URI no .env
-```
-
-### RabbitMQ não processa mensagens
-
-```bash
-# Acessar interface web
-http://localhost:15672 (guest/guest)
-
-# Verificar fila "weather_data"
-# Ver logs do Go worker
-docker-compose logs go-worker
-
-# Ver logs do Python collector
-docker-compose logs python-collector
-```
-
-### Frontend não carrega dados
-
-```bash
-# Verificar se VITE_API_URL está correto no .env
-# Verificar CORS na API (deve permitir localhost:5173)
-# Abrir console do navegador (F12) e verificar erros
-# Ver logs da API: docker-compose logs api
-```
-
-### IA não funciona
-
-```bash
-# Verificar se GROQ_API_KEY está configurada no .env
-# Sistema funciona normalmente sem IA (fallback automático para regras)
-# Ver logs da API para mensagens sobre IA: docker-compose logs api | grep AI
-```
-
----
-
 ## 🚀 Melhorias Futuras
 
 Possíveis evoluções do projeto:
 
-- [ ] WebSockets para atualização em tempo real sem polling
 - [ ] Aumentar cobertura de testes (>90%)
 - [ ] CI/CD com GitHub Actions
-- [ ] Deploy em produção (Railway, Render, Vercel)
 - [ ] Mais tipos de gráficos e visualizações
 - [ ] Notificações push para alertas climáticos
 - [ ] Cache com Redis para melhor performance
-- [ ] Comparação: previsão vs realidade
 - [ ] Suporte para múltiplas localizações
-- [ ] Dark mode completo no frontend
 - [ ] PWA (Progressive Web App)
 
 ---
@@ -706,11 +614,11 @@ Possíveis evoluções do projeto:
 
 ## 👤 Autor
 
-**[Seu Nome Completo]**
+**Dalton Frugoli Fernandes Almeida**
 
-- GitHub: [@seu-usuario](https://github.com/seu-usuario)
-- LinkedIn: [Seu Nome](https://linkedin.com/in/seu-perfil)
-- Email: seu.email@example.com
+- GitHub: [daltonfrugoli](https://github.com/daltonfrugoli)
+- LinkedIn: [dalton-frugoli](https://linkedin.com/in/dalton-frugoli)
+- Email: daltonfrugoli7@gmail.com
 
 ---
 
