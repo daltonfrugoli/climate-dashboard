@@ -120,7 +120,22 @@ git clone -b dalton-frugoli-fernandes-almeida https://github.com/seu-usuario/des
 cd desafio-gdash-2025-02
 ```
 
-#### 2. Configure as variáveis de ambiente
+#### 2. Obtenha sua chave da API Groq 🤖
+
+Para utilizar os recursos de IA do sistema, você precisa de uma chave da API Groq:
+
+1. **Acesse**: [https://console.groq.com/](https://console.groq.com/)
+2. **Faça cadastro** (gratuito) ou faça login
+3. **Navegue até**: `API Keys` no menu lateral
+4. **Clique em**: `Create API Key`
+5. **Copie a chave** gerada (ela começa com `gsk_...`)
+
+⚠️ **IMPORTANTE**: Guarde esta chave em local seguro! Ela será necessária na próxima etapa.
+
+> 💡 **Nota**: A chave Groq é **opcional**. Se você não configurá-la, o sistema funcionará normalmente usando insights baseados em regras ao invés de IA.
+
+
+#### 3. Configure as variáveis de ambiente
 
 ```bash
 cp .env.example .env
@@ -153,7 +168,7 @@ DEFAULT_USER_NAME=Administrador
 
 ```
 
-#### 3. Inicie todos os serviços
+#### 4. Inicie todos os serviços
 
 ```bash
 docker-compose up -d --build
@@ -165,7 +180,7 @@ Este comando irá:
 - Configurar a rede entre os containers
 - Inicializar o banco de dados com o usuário padrão
 
-#### 4. Verifique os logs (opcional)
+#### 5. Verifique os logs (opcional)
 
 ```bash
 # Ver logs de todos os serviços
@@ -178,14 +193,14 @@ docker-compose logs -f worker-go
 docker-compose logs -f weather-collector
 ```
 
-#### 5. Acesse o sistema
+#### 6. Acesse o sistema
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3000/api
 - **Documentação Swagger**: http://localhost:3000/api/docs
 - **RabbitMQ Management**: http://localhost:15672
 
-#### 6. Login no sistema
+#### 7. Login no sistema
 
 Use as credenciais padrão configuradas no `.env`:
 
@@ -194,7 +209,7 @@ Email: admin@example.com
 Senha: 123456
 ```
 
-#### 7. Parar os serviços
+#### 8. Parar os serviços
 
 ```bash
 # Parar containers
