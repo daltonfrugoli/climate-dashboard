@@ -1,15 +1,16 @@
-# 🌦️ Desafio GDASH 2025/02 - Sistema de Monitoramento Climático com IA
+# 🌦️ Climate Analytics Dashboard - Sistema de Monitoramento Climático com IA
 
 Sistema full-stack para coleta, processamento e análise de dados climáticos em tempo real com insights gerados por IA.
 
-[![LinkedIn Button](https://img.shields.io/badge/LinkedIn-%230077B5.svg?&style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/gdash/)
-[![GDASH Website Button](https://img.shields.io/badge/-Website-red)](https://gdash.io/)
+[![LinkedIn Button](https://img.shields.io/badge/LinkedIn-%230077B5.svg?&style=flat-square&logo=linkedin&logoColor=white)](https://linkedin.com/in/dalton-frugoli)
 
 ---
 
 ## 📋 Sobre o Projeto
 
-Este projeto integra múltiplas linguagens e tecnologias para criar um pipeline completo de dados climáticos, desenvolvido como parte do processo seletivo da GDASH 2025/02 para a vaga de Desenvolvedor Full Stack Junior.
+Este projeto integra múltiplas linguagens e tecnologias para criar um pipeline completo de dados climáticos.Este projeto foi desenvolvido originalmente como solução de um desafio técnico proposto pela empresa [GDASH](https://gdash.io/).
+
+Todo o código, arquitetura e implementação aqui presentes são de minha autoria.
 
 ### 🎯 Funcionalidades Implementadas
 
@@ -556,21 +557,6 @@ Possíveis evoluções do projeto:
 
 ---
 
-## 🎥 Vídeo Explicativo
-
-📹 **[Clique aqui para assistir ao vídeo demonstrativo](seu-link-youtube-aqui)**
-
-**Duração**: ~5 minutos
-
-**Conteúdo do vídeo**:
-1. Visão geral da arquitetura
-2. Demonstração do sistema rodando
-3. Pipeline de dados (Python → RabbitMQ → Go → NestJS → Frontend)
-4. Sistema de insights com IA
-5. Principais decisões técnicas
-
----
-
 ## 👤 Autor
 
 **Dalton Frugoli Fernandes Almeida**
@@ -583,7 +569,7 @@ Possíveis evoluções do projeto:
 
 ## 🙏 Agradecimentos
 
-- **GDASH** pela oportunidade de participar do processo seletivo
+- **GDASH** pela oportunidade de participar do desafio
 - **Open-Meteo** pelos dados climáticos gratuitos e de qualidade
 - **Groq** pela API de IA com LLaMA 3
 - Comunidade open source pelas excelentes ferramentas
@@ -611,7 +597,6 @@ Este projeto foi desenvolvido como parte do processo seletivo da GDASH 2025/02 e
 
 <div align="center">
 
-**⚡ Desenvolvido com dedicação para o Desafio GDASH 2025/02**
 
 [![Made with NestJS](https://img.shields.io/badge/Made%20with-NestJS-E0234E?style=for-the-badge&logo=nestjs)](https://nestjs.com/)
 [![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
